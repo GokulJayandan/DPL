@@ -108,11 +108,6 @@ export default function CricketCursor() {
       cursor.touchMode = touchMode
       cursor.hideAt = 0
 
-      if (touchMode) {
-        cursor.x = clientX
-        cursor.y = clientY
-      }
-
       if (!cursor.initialized) {
         cursor.x = clientX
         cursor.y = clientY
@@ -178,7 +173,7 @@ export default function CricketCursor() {
         cursor.hideAt = 0
         hideCursor()
       }
-      const easing = reducedMotion || cursor.touchMode ? 1 : 0.34
+      const easing = reducedMotion ? 1 : 0.34
       cursor.x += (cursor.targetX - cursor.x) * easing
       cursor.y += (cursor.targetY - cursor.y) * easing
       cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.2
