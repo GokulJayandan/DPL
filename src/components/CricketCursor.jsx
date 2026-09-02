@@ -63,13 +63,11 @@ export default function CricketCursor() {
       document.documentElement.classList.toggle('cricket-cursor-enabled', finePointerQuery.matches)
     }
 
-    let lastTouchTime = 0
-
     const spawnParticle = (x, y, movementX, movementY, now) => {
       if (reducedMotion) return
       const distance = Math.hypot(x - lastTrailX, y - lastTrailY)
-      const minimumDistance = cursor.touchMode ? 5 : 8
-      const minimumDelay = cursor.touchMode ? 16 : 30
+      const minimumDistance = cursor.touchMode ? 6 : 8
+      const minimumDelay = cursor.touchMode ? 20 : 30
       if (distance < minimumDistance && now - lastTrailTime < minimumDelay) return
 
       particles[particleIndex] = {
@@ -78,8 +76,8 @@ export default function CricketCursor() {
         vx: -movementX * 0.22 + (Math.random() - 0.5) * 0.5,
         vy: -movementY * 0.22 + (Math.random() - 0.5) * 0.5,
         born: now,
-        life: cursor.touchMode ? 320 + Math.random() * 140 : 400 + Math.random() * 180,
-        size: cursor.touchMode ? 6 + Math.random() * 3 : 7 + Math.random() * 5,
+        life: 400 + Math.random() * 180,
+        size: cursor.touchMode ? 7 + Math.random() * 3 : 7 + Math.random() * 5,
       }
       particleIndex = (particleIndex + 1) % TRAIL_PARTICLE_COUNT
       lastTrailX = x
@@ -87,11 +85,11 @@ export default function CricketCursor() {
       lastTrailTime = now
     }
 
-    const spawnRipple = (x, y) => {
+    const spawnRipple = () => {
       if (reducedMotion) return
       ripples[rippleIndex] = {
-        x: x ?? cursor.targetX,
-        y: y ?? cursor.targetY,
+        x: cursor.targetX,
+        y: cursor.targetY,
         born: performance.now(),
         life: 420,
       }
@@ -101,15 +99,13 @@ export default function CricketCursor() {
     const updateCursorPosition = (clientX, clientY, target, touchMode) => {
       if (!enabled) return
 
+      const movementX = clientX - cursor.targetX
+      const movementY = clientY - cursor.targetY
+      cursor.targetX = clientX
+      cursor.targetY = clientY
       cursor.visible = true
       cursor.touchMode = touchMode
       cursor.hideAt = 0
-
-      const movementX = clientX - cursor.targetX
-      const movementY = clientY - cursor.targetY
-
-      cursor.targetX = clientX
-      cursor.targetY = clientY
 
       if (!cursor.initialized) {
         cursor.x = clientX
@@ -122,21 +118,18 @@ export default function CricketCursor() {
       }
 
       cursor.hovered = !touchMode && target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
-      if (ballRef.current && !touchMode) {
-        ballRef.current.style.opacity = '1'
-      }
+      if (ballRef.current) ballRef.current.style.opacity = '1'
     }
 
     const handlePointerMove = (event) => {
-      // Ignore touch-based or simulated mouse events fired after mobile touches
-      if (event.pointerType === 'touch' || performance.now() - lastTouchTime < 1000) return
+      if (event.pointerType === 'touch') return
       updateCursorPosition(event.clientX, event.clientY, event.target, false)
     }
 
     const handlePointerDown = (event) => {
-      if (!enabled || event.pointerType === 'touch' || performance.now() - lastTouchTime < 1000) return
+      if (!enabled || event.pointerType === 'touch') return
       cursor.pressed = true
-      spawnRipple(cursor.targetX, cursor.targetY)
+      spawnRipple()
     }
 
     const handlePointerUp = (event) => {
@@ -146,48 +139,46 @@ export default function CricketCursor() {
 
     const handleTouchStart = (event) => {
       if (!event.touches.length) return
-      lastTouchTime = performance.now()
       const touch = event.touches[0]
-      const now = performance.now()
-
-      const movementX = cursor.initialized ? touch.clientX - lastTrailX : 0
-      const movementY = cursor.initialized ? touch.clientY - lastTrailY : 0
-
+      cursor.pressed = true
+      cursor.touchMode = true
+      cursor.visible = true
+      cursor.initialized = true
+      cursor.hideAt = 0
+      cursor.x = touch.clientX
+      cursor.y = touch.clientY
+      cursor.targetX = touch.clientX
+      cursor.targetY = touch.clientY
       lastTrailX = touch.clientX
       lastTrailY = touch.clientY
-      lastTrailTime = now
-
-      spawnRipple(touch.clientX, touch.clientY)
-      spawnParticle(touch.clientX, touch.clientY, movementX, movementY, now)
-      if (ballRef.current) ballRef.current.style.opacity = '0'
+      lastTrailTime = performance.now()
+      if (ballRef.current) ballRef.current.style.opacity = '1'
+      spawnRipple()
     }
 
     const handleTouchMove = (event) => {
       if (!event.touches.length) return
-      lastTouchTime = performance.now()
       const touch = event.touches[0]
-      const now = performance.now()
-
-      const movementX = touch.clientX - lastTrailX
-      const movementY = touch.clientY - lastTrailY
-
-      if (Math.hypot(movementX, movementY) > 3) {
-        spawnParticle(touch.clientX, touch.clientY, movementX, movementY, now)
-        lastTrailX = touch.clientX
-        lastTrailY = touch.clientY
-        lastTrailTime = now
-      }
-
-      if (ballRef.current) ballRef.current.style.opacity = '0'
+      cursor.pressed = true
+      cursor.touchMode = true
+      cursor.visible = true
+      cursor.hideAt = 0
+      updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
     }
 
     const handleTouchEnd = (event) => {
-      lastTouchTime = performance.now()
-      if (ballRef.current) ballRef.current.style.opacity = '0'
+      if (event.touches.length) {
+        const touch = event.touches[0]
+        updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
+        return
+      }
+      cursor.pressed = false
+      cursor.hideAt = performance.now() + 500
     }
 
     const handleTouchCancel = () => {
-      if (ballRef.current) ballRef.current.style.opacity = '0'
+      cursor.pressed = false
+      cursor.hideAt = performance.now() + 350
     }
 
     const handleWindowExit = (event) => {
@@ -195,45 +186,35 @@ export default function CricketCursor() {
     }
 
     const renderFrame = (now) => {
-      if (cursor.hideAt) {
-        const remaining = cursor.hideAt - now
-        if (remaining <= 0) {
-          cursor.hideAt = 0
-          hideCursor()
-        } else if (ballRef.current && !cursor.touchMode) {
-          ballRef.current.style.opacity = `${Math.max(0, remaining / 220)}`
-        }
+      if (cursor.hideAt && now >= cursor.hideAt) {
+        cursor.hideAt = 0
+        hideCursor()
       }
 
-      if (!cursor.touchMode) {
-        const prevX = cursor.x
-        const prevY = cursor.y
+      const prevX = cursor.x
+      const prevY = cursor.y
 
-        // Desktop: Luxurious 0.34 floating mouse physics
-        const easing = reducedMotion ? 1 : 0.34
-        cursor.x += (cursor.targetX - cursor.x) * easing
-        cursor.y += (cursor.targetY - cursor.y) * easing
+      // Perfectly balanced fluid flow on both mobile and desktop
+      const easing = reducedMotion ? 1 : cursor.touchMode ? 0.36 : 0.34
+      cursor.x += (cursor.targetX - cursor.x) * easing
+      cursor.y += (cursor.targetY - cursor.y) * easing
 
-        const ballMovementX = cursor.x - prevX
-        const ballMovementY = cursor.y - prevY
+      const ballMovementX = cursor.x - prevX
+      const ballMovementY = cursor.y - prevY
 
-        // Spawn trail particles along desktop cursor path
-        if (cursor.visible && Math.hypot(ballMovementX, ballMovementY) > 0.35) {
-          spawnParticle(cursor.x, cursor.y, ballMovementX, ballMovementY, now)
-        }
+      // Spawn trail particles directly behind the ball's actual motion path for realistic flow
+      if (cursor.visible && Math.hypot(ballMovementX, ballMovementY) > 0.4) {
+        spawnParticle(cursor.x, cursor.y, ballMovementX, ballMovementY, now)
+      }
 
-        cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.22
+      cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.2
 
-        const targetScale = cursor.pressed ? 0.84 : cursor.hovered ? 46 / 38 : 1
-        cursor.scale += (targetScale - cursor.scale) * (reducedMotion ? 1 : 0.3)
+      const targetScale = cursor.pressed ? 0.82 : cursor.hovered ? 46 / 38 : 1
+      cursor.scale += (targetScale - cursor.scale) * (reducedMotion ? 1 : 0.3)
 
-        if (ballRef.current && cursor.initialized) {
-          ballRef.current.style.transform = `translate3d(${cursor.x}px, ${cursor.y}px, 0) translate3d(-50%, -50%, 0) rotate(${cursor.rotation}deg) scale(${cursor.scale})`
-          ballRef.current.classList.toggle('is-hovering', cursor.hovered)
-          ballRef.current.style.opacity = '1'
-        }
-      } else {
-        if (ballRef.current) ballRef.current.style.opacity = '0'
+      if (ballRef.current && cursor.initialized) {
+        ballRef.current.style.transform = `translate3d(${cursor.x}px, ${cursor.y}px, 0) translate3d(-50%, -50%, 0) rotate(${cursor.rotation}deg) scale(${cursor.scale})`
+        ballRef.current.classList.toggle('is-hovering', cursor.hovered)
       }
 
       particles.forEach((particle, index) => {
