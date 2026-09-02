@@ -101,22 +101,41 @@ export default function CricketCursor() {
     const updateCursorPosition = (clientX, clientY, target, touchMode) => {
       if (!enabled) return
 
-      const movementX = clientX - cursor.targetX
-      const movementY = clientY - cursor.targetY
-      cursor.targetX = clientX
-      cursor.targetY = clientY
       cursor.visible = true
       cursor.touchMode = touchMode
       cursor.hideAt = 0
 
-      if (!cursor.initialized) {
+      if (touchMode) {
+        // MOBILE: 100% direct 1:1 hand tracking — zero lag, zero corner-cutting, follows curves exactly
+        const movementX = cursor.initialized ? clientX - cursor.x : 0
+        const movementY = cursor.initialized ? clientY - cursor.y : 0
         cursor.x = clientX
         cursor.y = clientY
+        cursor.targetX = clientX
+        cursor.targetY = clientY
         cursor.initialized = true
-      }
 
-      if (!reducedMotion) {
-        cursor.targetRotation += clamp(movementX * 0.8 + movementY * 0.25, -22, 22)
+        if (!reducedMotion && (Math.abs(movementX) > 0.5 || Math.abs(movementY) > 0.5)) {
+          cursor.targetRotation += clamp(movementX * 1.2 + movementY * 0.3, -35, 35)
+          cursor.rotation = cursor.targetRotation
+          spawnParticle(clientX, clientY, movementX, movementY, performance.now())
+        }
+      } else {
+        // DESKTOP: Luxurious floating cursor with velocity
+        const movementX = clientX - cursor.targetX
+        const movementY = clientY - cursor.targetY
+        cursor.targetX = clientX
+        cursor.targetY = clientY
+
+        if (!cursor.initialized) {
+          cursor.x = clientX
+          cursor.y = clientY
+          cursor.initialized = true
+        }
+
+        if (!reducedMotion) {
+          cursor.targetRotation += clamp(movementX * 0.8 + movementY * 0.25, -22, 22)
+        }
       }
 
       cursor.hovered = !touchMode && target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
@@ -179,12 +198,12 @@ export default function CricketCursor() {
         return
       }
       cursor.pressed = false
-      cursor.hideAt = performance.now() + 260
+      cursor.hideAt = performance.now() + 220
     }
 
     const handleTouchCancel = () => {
       cursor.pressed = false
-      cursor.hideAt = performance.now() + 260
+      cursor.hideAt = performance.now() + 220
     }
 
     const handleWindowExit = (event) => {
@@ -198,34 +217,29 @@ export default function CricketCursor() {
           cursor.hideAt = 0
           hideCursor()
         } else if (ballRef.current && cursor.touchMode) {
-          ballRef.current.style.opacity = `${Math.max(0, remaining / 260)}`
+          ballRef.current.style.opacity = `${Math.max(0, remaining / 220)}`
         }
       }
 
-      const prevX = cursor.x
-      const prevY = cursor.y
-
-      if (cursor.touchMode) {
-        // Mobile: High-precision hand tracking so curves are preserved 1:1 without straight-line corner cutting
-        const easing = reducedMotion ? 1 : 0.86
-        cursor.x += (cursor.targetX - cursor.x) * easing
-        cursor.y += (cursor.targetY - cursor.y) * easing
-      } else {
+      if (!cursor.touchMode) {
         // Desktop: Luxurious floating cursor lag
+        const prevX = cursor.x
+        const prevY = cursor.y
+
         const easing = reducedMotion ? 1 : 0.34
         cursor.x += (cursor.targetX - cursor.x) * easing
         cursor.y += (cursor.targetY - cursor.y) * easing
+
+        const ballMovementX = cursor.x - prevX
+        const ballMovementY = cursor.y - prevY
+
+        // Spawn trail particles directly behind the ball's actual motion path for desktop
+        if (cursor.visible && Math.hypot(ballMovementX, ballMovementY) > 0.4) {
+          spawnParticle(cursor.x, cursor.y, ballMovementX, ballMovementY, now)
+        }
+
+        cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.2
       }
-
-      const ballMovementX = cursor.x - prevX
-      const ballMovementY = cursor.y - prevY
-
-      // Spawn trail particles directly behind the ball's actual motion path for realistic flow
-      if (cursor.visible && Math.hypot(ballMovementX, ballMovementY) > 0.4) {
-        spawnParticle(cursor.x, cursor.y, ballMovementX, ballMovementY, now)
-      }
-
-      cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.2
 
       const targetScale = cursor.pressed ? 0.82 : cursor.hovered ? 46 / 38 : 1
       cursor.scale += (targetScale - cursor.scale) * (reducedMotion ? 1 : 0.3)
