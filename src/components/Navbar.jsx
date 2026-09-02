@@ -91,7 +91,7 @@ export default function Navbar() {
 
         <div className="nav-actions">
           <button className="nav-cta-btn" onClick={() => scrollTo('register')}>
-            <span>REGISTER TEAM</span>
+            <span>REGISTER</span>
             <ArrowIcon size={13} />
           </button>
 
