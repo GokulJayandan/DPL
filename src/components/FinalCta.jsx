@@ -49,7 +49,7 @@ export default function FinalCta() {
               className="btn-primary btn-large"
               onClick={handleRegister}
             >
-              <span>REGISTER YOUR TEAM</span>
+              <span>REGISTER</span>
               <ArrowIcon size={16} />
             </a>
           </div>
