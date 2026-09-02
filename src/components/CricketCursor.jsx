@@ -58,27 +58,26 @@ export default function CricketCursor() {
     }
 
     const updateEligibility = () => {
-      enabled = finePointerQuery.matches || touchPointerQuery.matches
+      enabled = true
       reducedMotion = reducedMotionQuery.matches
       document.documentElement.classList.toggle('cricket-cursor-enabled', finePointerQuery.matches)
-      if (!enabled) hideCursor()
     }
 
     const spawnParticle = (x, y, movementX, movementY, now) => {
       if (reducedMotion) return
       const distance = Math.hypot(x - lastTrailX, y - lastTrailY)
-      const minimumDistance = 9
-      const minimumDelay = 42
+      const minimumDistance = cursor.touchMode ? 10 : 9
+      const minimumDelay = cursor.touchMode ? 28 : 42
       if (distance < minimumDistance && now - lastTrailTime < minimumDelay) return
 
       particles[particleIndex] = {
-        x: x + (Math.random() - 0.5) * 5,
-        y: y + (Math.random() - 0.5) * 5,
-        vx: -movementX * 0.12 + (Math.random() - 0.5) * 0.8,
-        vy: -movementY * 0.12 + (Math.random() - 0.5) * 0.8,
+        x: x + (Math.random() - 0.5) * 4,
+        y: y + (Math.random() - 0.5) * 4,
+        vx: -movementX * 0.1 + (Math.random() - 0.5) * 0.6,
+        vy: -movementY * 0.1 + (Math.random() - 0.5) * 0.6,
         born: now,
-        life: 400 + Math.random() * 200,
-        size: 7 + Math.random() * 5,
+        life: 380 + Math.random() * 180,
+        size: cursor.touchMode ? 6 + Math.random() * 3 : 7 + Math.random() * 5,
       }
       particleIndex = (particleIndex + 1) % TRAIL_PARTICLE_COUNT
       lastTrailX = x
@@ -118,7 +117,7 @@ export default function CricketCursor() {
         cursor.targetRotation += clamp(movementX * 0.8 + movementY * 0.25, -22, 22)
       }
 
-      cursor.hovered = target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
+      cursor.hovered = !touchMode && target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
       spawnParticle(clientX, clientY, movementX, movementY, performance.now())
       if (ballRef.current) ballRef.current.style.opacity = '1'
     }
@@ -140,19 +139,31 @@ export default function CricketCursor() {
     }
 
     const handleTouchStart = (event) => {
-      if (!enabled || !event.touches.length) return
+      if (!event.touches.length) return
       const touch = event.touches[0]
       cursor.pressed = true
+      cursor.touchMode = true
+      cursor.visible = true
+      cursor.initialized = true
+      cursor.hideAt = 0
       cursor.x = touch.clientX
       cursor.y = touch.clientY
-      updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
+      cursor.targetX = touch.clientX
+      cursor.targetY = touch.clientY
+      lastTrailX = touch.clientX
+      lastTrailY = touch.clientY
+      lastTrailTime = performance.now()
+      if (ballRef.current) ballRef.current.style.opacity = '1'
       spawnRipple()
     }
 
     const handleTouchMove = (event) => {
-      if (!enabled || !event.touches.length) return
+      if (!event.touches.length) return
       const touch = event.touches[0]
       cursor.pressed = true
+      cursor.touchMode = true
+      cursor.visible = true
+      cursor.hideAt = 0
       updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
     }
 
@@ -163,7 +174,12 @@ export default function CricketCursor() {
         return
       }
       cursor.pressed = false
-      cursor.hideAt = performance.now() + 500
+      cursor.hideAt = performance.now() + 450
+    }
+
+    const handleTouchCancel = () => {
+      cursor.pressed = false
+      cursor.hideAt = performance.now() + 350
     }
 
     const handleWindowExit = (event) => {
@@ -175,12 +191,22 @@ export default function CricketCursor() {
         cursor.hideAt = 0
         hideCursor()
       }
-      const easing = reducedMotion ? 1 : cursor.touchMode ? 0.2 : 0.34
-      cursor.x += (cursor.targetX - cursor.x) * easing
-      cursor.y += (cursor.targetY - cursor.y) * easing
+
+      if (cursor.touchMode) {
+        // Highly responsive adaptive touch tracking: follows hand curves instantly
+        const dist = Math.hypot(cursor.targetX - cursor.x, cursor.targetY - cursor.y)
+        const touchEasing = dist > 50 ? 0.68 : 0.52
+        cursor.x += (cursor.targetX - cursor.x) * touchEasing
+        cursor.y += (cursor.targetY - cursor.y) * touchEasing
+      } else {
+        const easing = reducedMotion ? 1 : 0.34
+        cursor.x += (cursor.targetX - cursor.x) * easing
+        cursor.y += (cursor.targetY - cursor.y) * easing
+      }
+
       cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.2
 
-      const targetScale = cursor.pressed ? 0.78 : cursor.hovered ? 46 / 38 : 1
+      const targetScale = cursor.pressed ? 0.82 : cursor.hovered ? 46 / 38 : 1
       cursor.scale += (targetScale - cursor.scale) * (reducedMotion ? 1 : 0.3)
 
       if (ballRef.current && cursor.initialized) {
@@ -240,7 +266,7 @@ export default function CricketCursor() {
     document.addEventListener('touchstart', handleTouchStart, { passive: true })
     document.addEventListener('touchmove', handleTouchMove, { passive: true })
     document.addEventListener('touchend', handleTouchEnd, { passive: true })
-    document.addEventListener('touchcancel', handleTouchEnd, { passive: true })
+    document.addEventListener('touchcancel', handleTouchCancel, { passive: true })
     document.addEventListener('mouseout', handleWindowExit, { passive: true })
     window.addEventListener('blur', hideCursor)
     finePointerQuery.addEventListener('change', updateEligibility)
@@ -257,7 +283,7 @@ export default function CricketCursor() {
       document.removeEventListener('touchstart', handleTouchStart)
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleTouchEnd)
-      document.removeEventListener('touchcancel', handleTouchEnd)
+      document.removeEventListener('touchcancel', handleTouchCancel)
       document.removeEventListener('mouseout', handleWindowExit)
       window.removeEventListener('blur', hideCursor)
       finePointerQuery.removeEventListener('change', updateEligibility)

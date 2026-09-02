@@ -62,37 +62,9 @@ export default function Hero() {
   return (
     <section id="home" className="hero-section section-grid">
       {/* 
-        Cinematic Landing Video Background:
-        Native full-resolution MP4 playback with zero blur/filters, contained strictly within Hero.
+        Hero Ambient Background (Video removed for maximum mobile responsiveness & performance)
       */}
-      <div className="hero-video-wrapper" aria-hidden="true">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload='auto'
-          disablePictureInPicture
-          className='hero-video-element'
-        >
-          <source src='/video/cinematic-intro.mp4' type='video/mp4' />
-        </video>
-        {false && <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          disablePictureInPicture
-          controls={false}
-          className="hero-video-element"
-        >
-          <source src="/video/cinematic-intro.mp4" type="video/mp4" />
-          <source src="/cinematic-intro.mp4" type="video/mp4" />
-          <source src="/intro.mp4" type="video/mp4" />
-        </video>}
-
+      <div className="hero-video-wrapper hero-ambient-backdrop" aria-hidden="true">
         {/* Subtle contrast gradient behind typography for perfect legibility */}
         <div className="hero-video-tint" />
       </div>

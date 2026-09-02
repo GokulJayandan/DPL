@@ -61,6 +61,20 @@
   }
 }
 
+@media (max-width: 767px), (pointer: coarse) {
+  .cricket-cursor-ball {
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 0 6px rgba(255, 145, 30, 0.9));
+  }
+  .cricket-cursor-particle.particle-green {
+    box-shadow: 0 0 6px rgba(79, 174, 141, 0.9);
+  }
+  .cricket-cursor-particle.particle-gold {
+    box-shadow: 0 0 6px rgba(245, 202, 104, 0.9);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cricket-cursor-particle,
   .cricket-cursor-ripple {
