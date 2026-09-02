@@ -67,8 +67,8 @@ export default function CricketCursor() {
     const spawnParticle = (x, y, movementX, movementY, now) => {
       if (reducedMotion) return
       const distance = Math.hypot(x - lastTrailX, y - lastTrailY)
-      const minimumDistance = cursor.touchMode ? 18 : 9
-      const minimumDelay = cursor.touchMode ? 70 : 42
+      const minimumDistance = 9
+      const minimumDelay = 42
       if (distance < minimumDistance && now - lastTrailTime < minimumDelay) return
 
       particles[particleIndex] = {
@@ -119,7 +119,7 @@ export default function CricketCursor() {
       }
 
       const target = event.target
-      cursor.hovered = !cursor.touchMode && target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
+      cursor.hovered = target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
       spawnParticle(event.clientX, event.clientY, movementX, movementY, performance.now())
       if (ballRef.current) ballRef.current.style.opacity = '1'
     }
@@ -142,7 +142,7 @@ export default function CricketCursor() {
 
     const handlePointerUp = () => {
       cursor.pressed = false
-      if (cursor.touchMode) cursor.hideAt = performance.now() + 260
+      if (cursor.touchMode) cursor.hideAt = performance.now() + 500
     }
 
     const handleWindowExit = (event) => {

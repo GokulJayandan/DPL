@@ -61,13 +61,6 @@
   }
 }
 
-@media (max-width: 767px), (hover: none) and (pointer: coarse) {
-  .cricket-cursor-ball {
-    width: 34px;
-    height: 34px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .cricket-cursor-particle,
   .cricket-cursor-ripple {
