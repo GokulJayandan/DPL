@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import './CricketCursorBackground.css'
 
-const TRAIL_COUNT = 18
-const RIPPLE_COUNT = 4
+const TRAIL_COUNT = 10
+const RIPPLE_COUNT = 3
 const INTERACTIVE_SELECTOR = [
   'a[href]',
   'button',
@@ -34,7 +34,6 @@ export default function CricketCursorBackground() {
 
   useEffect(() => {
     const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)')
-    const touchPointerQuery = window.matchMedia('(hover: none) and (pointer: coarse)')
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     const cursor = {
       x: 0,
@@ -48,8 +47,6 @@ export default function CricketCursorBackground() {
       visible: false,
       hovered: false,
       pressed: false,
-      touchMode: false,
-      hideAt: 0,
     }
     const spotlight = {
       x: window.innerWidth / 2,
@@ -65,7 +62,7 @@ export default function CricketCursorBackground() {
     let particleIndex = 0
     let rippleIndex = 0
     let animationFrame = 0
-    let enabled = finePointerQuery.matches || touchPointerQuery.matches
+    let enabled = finePointerQuery.matches
     let reducedMotion = reducedMotionQuery.matches
     let lastTrailX = 0
     let lastTrailY = 0
@@ -88,14 +85,14 @@ export default function CricketCursorBackground() {
     }
 
     const updateCapabilities = () => {
-      enabled = finePointerQuery.matches || touchPointerQuery.matches
+      enabled = finePointerQuery.matches
       reducedMotion = reducedMotionQuery.matches
-      document.documentElement.classList.toggle('cricket-cursor-enabled', finePointerQuery.matches)
+      document.documentElement.classList.toggle('cricket-cursor-enabled', enabled)
       if (!enabled) {
         hidePointerEffects()
         cancelAnimationFrame(animationFrame)
         animationFrame = 0
-      } else if (!animationFrame && finePointerQuery.matches) {
+      } else if (!animationFrame) {
         animationFrame = requestAnimationFrame(renderFrame)
       }
     }
@@ -127,15 +124,17 @@ export default function CricketCursorBackground() {
       const distance = Math.hypot(x - lastTrailX, y - lastTrailY)
       if (distance < 10 && now - lastTrailTime < 46) return
 
+      const spark = Math.random() < 0.09
       particles[particleIndex] = {
-        x: x + (Math.random() - 0.5) * 5,
-        y: y + (Math.random() - 0.5) * 5,
-        vx: -movementX * 0.12 + (Math.random() - 0.5) * 0.8,
-        vy: -movementY * 0.12 + (Math.random() - 0.5) * 0.8,
+        x: x + (Math.random() - 0.5) * 3,
+        y: y + (Math.random() - 0.5) * 3,
+        vx: -movementX * 0.08 + (Math.random() - 0.5) * 0.5,
+        vy: -movementY * 0.08 + (Math.random() - 0.5) * 0.5,
         born: now,
-        life: 400 + Math.random() * 200,
-        size: 7 + Math.random() * 5,
+        life: 380 + Math.random() * 160,
+        size: spark ? 2 : 3 + Math.random() * 2,
       }
+      particleRefs.current[particleIndex]?.classList.toggle('particle-spark', spark)
       particleIndex = (particleIndex + 1) % TRAIL_COUNT
       lastTrailX = x
       lastTrailY = y
@@ -148,7 +147,7 @@ export default function CricketCursorBackground() {
         x: cursor.targetX,
         y: cursor.targetY,
         born: performance.now(),
-        life: 420,
+        life: 380,
       }
       rippleIndex = (rippleIndex + 1) % RIPPLE_COUNT
     }
@@ -160,8 +159,6 @@ export default function CricketCursorBackground() {
       cursor.targetX = event.clientX
       cursor.targetY = event.clientY
       cursor.visible = true
-      cursor.touchMode = false
-      cursor.hideAt = 0
       spotlight.targetX = event.clientX
       spotlight.targetY = event.clientY
       spotlight.targetOpacity = reducedMotion ? 0 : 1
@@ -173,7 +170,7 @@ export default function CricketCursorBackground() {
       }
 
       if (!reducedMotion) {
-        cursor.targetRotation += clamp(movementX * 0.8 + movementY * 0.25, -22, 22)
+        cursor.targetRotation += clamp(movementX * 0.55 + movementY * 0.18, -12, 12)
       }
 
       cursor.hovered = event.target instanceof Element && Boolean(event.target.closest(INTERACTIVE_SELECTOR))
@@ -188,53 +185,8 @@ export default function CricketCursorBackground() {
       spawnRipple()
     }
 
-    const handlePointerUp = (event) => {
-      if (event.pointerType === 'touch') return
+    const handlePointerUp = () => {
       cursor.pressed = false
-    }
-
-    const updateTouchPosition = (touch) => {
-      if (!enabled) return
-      const movementX = touch.clientX - cursor.targetX
-      const movementY = touch.clientY - cursor.targetY
-      cursor.x = touch.clientX
-      cursor.y = touch.clientY
-      cursor.targetX = touch.clientX
-      cursor.targetY = touch.clientY
-      cursor.initialized = true
-      cursor.visible = true
-      cursor.touchMode = true
-      cursor.hideAt = 0
-      if (!reducedMotion) {
-        cursor.targetRotation += clamp(movementX * 0.8 + movementY * 0.25, -22, 22)
-      }
-      const target = document.elementFromPoint(touch.clientX, touch.clientY)
-      cursor.hovered = target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
-      spawnParticle(touch.clientX, touch.clientY, movementX, movementY, performance.now())
-      if (ballRef.current) ballRef.current.style.opacity = '1'
-      if (!animationFrame) animationFrame = requestAnimationFrame(renderFrame)
-    }
-
-    const handleTouchStart = (event) => {
-      if (!enabled || !event.touches.length) return
-      cursor.pressed = true
-      updateTouchPosition(event.touches[0])
-      spawnRipple()
-    }
-
-    const handleTouchMove = (event) => {
-      if (!enabled || !event.touches.length) return
-      cursor.pressed = true
-      updateTouchPosition(event.touches[0])
-    }
-
-    const handleTouchEnd = (event) => {
-      if (event.touches.length) {
-        updateTouchPosition(event.touches[0])
-        return
-      }
-      cursor.pressed = false
-      cursor.hideAt = performance.now() + 500
     }
 
     const handleWindowExit = (event) => {
@@ -242,17 +194,12 @@ export default function CricketCursorBackground() {
     }
 
     const renderFrame = (now) => {
-      if (cursor.hideAt && now >= cursor.hideAt) {
-        cursor.hideAt = 0
-        cursor.visible = false
-        if (ballRef.current) ballRef.current.style.opacity = '0'
-      }
-      const cursorEase = reducedMotion || cursor.touchMode ? 1 : 0.34
+      const cursorEase = reducedMotion ? 1 : 0.55
       cursor.x += (cursor.targetX - cursor.x) * cursorEase
       cursor.y += (cursor.targetY - cursor.y) * cursorEase
-      cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.2
-      const targetScale = cursor.pressed ? 0.78 : cursor.hovered ? 46 / 38 : 1
-      cursor.scale += (targetScale - cursor.scale) * (reducedMotion ? 1 : 0.3)
+      cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.18
+      const targetScale = cursor.pressed ? 0.9 : cursor.hovered ? 46 / 38 : 1
+      cursor.scale += (targetScale - cursor.scale) * (reducedMotion ? 1 : 0.32)
 
       if (ballRef.current && cursor.initialized) {
         ballRef.current.style.transform = `translate3d(${cursor.x}px, ${cursor.y}px, 0) translate3d(-50%, -50%, 0) rotate(${cursor.rotation}deg) scale(${cursor.scale})`
@@ -287,12 +234,10 @@ export default function CricketCursorBackground() {
           element.style.opacity = '0'
           return
         }
-        const x = particle.x + particle.vx * progress * 18
-        const y = particle.y + particle.vy * progress * 18 + progress * 5
-        const scale = 1 - progress
-        element.style.width = `${particle.size}px`
-        element.style.height = `${particle.size}px`
-        element.style.opacity = `${(1 - progress) * 0.95}`
+        const x = particle.x + particle.vx * progress * 16
+        const y = particle.y + particle.vy * progress * 16
+        const scale = (particle.size / 4) * (1 - progress)
+        element.style.opacity = `${(1 - progress) * 0.72}`
         element.style.transform = `translate3d(${x}px, ${y}px, 0) translate3d(-50%, -50%, 0) scale(${scale})`
       })
 
@@ -308,13 +253,11 @@ export default function CricketCursorBackground() {
           element.style.opacity = '0'
           return
         }
-        element.style.opacity = `${1 - progress}`
-        element.style.transform = `translate3d(${ripple.x}px, ${ripple.y}px, 0) translate3d(-50%, -50%, 0) scale(${0.35 + progress * 2.15})`
+        element.style.opacity = `${(1 - progress) * 0.72}`
+        element.style.transform = `translate3d(${ripple.x}px, ${ripple.y}px, 0) translate3d(-50%, -50%, 0) scale(${0.4 + progress * 2})`
       })
 
-      const hasActiveEffects = particles.some(Boolean) || ripples.some(Boolean)
-      const shouldContinue = finePointerQuery.matches || cursor.visible || hasActiveEffects
-      animationFrame = enabled && shouldContinue ? requestAnimationFrame(renderFrame) : 0
+      animationFrame = enabled ? requestAnimationFrame(renderFrame) : 0
     }
 
     updateCapabilities()
@@ -322,14 +265,9 @@ export default function CricketCursorBackground() {
     document.addEventListener('pointerdown', handlePointerDown, { passive: true })
     document.addEventListener('pointerup', handlePointerUp, { passive: true })
     document.addEventListener('pointercancel', handlePointerUp, { passive: true })
-    document.addEventListener('touchstart', handleTouchStart, { passive: true })
-    document.addEventListener('touchmove', handleTouchMove, { passive: true })
-    document.addEventListener('touchend', handleTouchEnd, { passive: true })
-    document.addEventListener('touchcancel', handleTouchEnd, { passive: true })
     document.addEventListener('mouseout', handleWindowExit, { passive: true })
     window.addEventListener('blur', hidePointerEffects)
     finePointerQuery.addEventListener('change', updateCapabilities)
-    touchPointerQuery.addEventListener('change', updateCapabilities)
     reducedMotionQuery.addEventListener('change', updateCapabilities)
     return () => {
       cancelAnimationFrame(animationFrame)
@@ -337,14 +275,9 @@ export default function CricketCursorBackground() {
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('pointerup', handlePointerUp)
       document.removeEventListener('pointercancel', handlePointerUp)
-      document.removeEventListener('touchstart', handleTouchStart)
-      document.removeEventListener('touchmove', handleTouchMove)
-      document.removeEventListener('touchend', handleTouchEnd)
-      document.removeEventListener('touchcancel', handleTouchEnd)
       document.removeEventListener('mouseout', handleWindowExit)
       window.removeEventListener('blur', hidePointerEffects)
       finePointerQuery.removeEventListener('change', updateCapabilities)
-      touchPointerQuery.removeEventListener('change', updateCapabilities)
       reducedMotionQuery.removeEventListener('change', updateCapabilities)
       document.documentElement.classList.remove('cricket-cursor-enabled')
       clearActiveCard()
@@ -362,7 +295,7 @@ export default function CricketCursorBackground() {
           <span
             key={`particle-${index}`}
             ref={(element) => { particleRefs.current[index] = element }}
-            className={`cricket-cursor-particle particle-${index % 2 ? 'gold' : 'green'}`}
+            className={`cricket-cursor-particle particle-${index % 2 ? 'cyan' : 'blue'}`}
           />
         ))}
         {Array.from({ length: RIPPLE_COUNT }, (_, index) => (
