@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+public/video/bbl-frames/
+public/video/bbl-loop*.mp4
