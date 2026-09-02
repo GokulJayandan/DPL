@@ -66,18 +66,18 @@ export default function CricketCursor() {
     const spawnParticle = (x, y, movementX, movementY, now) => {
       if (reducedMotion) return
       const distance = Math.hypot(x - lastTrailX, y - lastTrailY)
-      const minimumDistance = cursor.touchMode ? 10 : 9
-      const minimumDelay = cursor.touchMode ? 28 : 42
+      const minimumDistance = cursor.touchMode ? 6 : 8
+      const minimumDelay = cursor.touchMode ? 20 : 30
       if (distance < minimumDistance && now - lastTrailTime < minimumDelay) return
 
       particles[particleIndex] = {
         x: x + (Math.random() - 0.5) * 4,
         y: y + (Math.random() - 0.5) * 4,
-        vx: -movementX * 0.1 + (Math.random() - 0.5) * 0.6,
-        vy: -movementY * 0.1 + (Math.random() - 0.5) * 0.6,
+        vx: -movementX * 0.22 + (Math.random() - 0.5) * 0.5,
+        vy: -movementY * 0.22 + (Math.random() - 0.5) * 0.5,
         born: now,
-        life: 380 + Math.random() * 180,
-        size: cursor.touchMode ? 6 + Math.random() * 3 : 7 + Math.random() * 5,
+        life: 400 + Math.random() * 180,
+        size: cursor.touchMode ? 7 + Math.random() * 3 : 7 + Math.random() * 5,
       }
       particleIndex = (particleIndex + 1) % TRAIL_PARTICLE_COUNT
       lastTrailX = x
@@ -118,7 +118,6 @@ export default function CricketCursor() {
       }
 
       cursor.hovered = !touchMode && target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
-      spawnParticle(clientX, clientY, movementX, movementY, performance.now())
       if (ballRef.current) ballRef.current.style.opacity = '1'
     }
 
@@ -174,7 +173,7 @@ export default function CricketCursor() {
         return
       }
       cursor.pressed = false
-      cursor.hideAt = performance.now() + 450
+      cursor.hideAt = performance.now() + 500
     }
 
     const handleTouchCancel = () => {
@@ -192,16 +191,20 @@ export default function CricketCursor() {
         hideCursor()
       }
 
-      if (cursor.touchMode) {
-        // Highly responsive adaptive touch tracking: follows hand curves instantly
-        const dist = Math.hypot(cursor.targetX - cursor.x, cursor.targetY - cursor.y)
-        const touchEasing = dist > 50 ? 0.68 : 0.52
-        cursor.x += (cursor.targetX - cursor.x) * touchEasing
-        cursor.y += (cursor.targetY - cursor.y) * touchEasing
-      } else {
-        const easing = reducedMotion ? 1 : 0.34
-        cursor.x += (cursor.targetX - cursor.x) * easing
-        cursor.y += (cursor.targetY - cursor.y) * easing
+      const prevX = cursor.x
+      const prevY = cursor.y
+
+      // Perfectly balanced fluid flow on both mobile and desktop
+      const easing = reducedMotion ? 1 : cursor.touchMode ? 0.36 : 0.34
+      cursor.x += (cursor.targetX - cursor.x) * easing
+      cursor.y += (cursor.targetY - cursor.y) * easing
+
+      const ballMovementX = cursor.x - prevX
+      const ballMovementY = cursor.y - prevY
+
+      // Spawn trail particles directly behind the ball's actual motion path for realistic flow
+      if (cursor.visible && Math.hypot(ballMovementX, ballMovementY) > 0.4) {
+        spawnParticle(cursor.x, cursor.y, ballMovementX, ballMovementY, now)
       }
 
       cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.2

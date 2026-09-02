@@ -797,21 +797,20 @@ html.reveal-ready [data-reveal]:not(.revealed) {
 .collage-strip-inner {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   will-change: transform;
 }
 
-/* Animate each strip upward ultra-slowly for ambient depth */
+/* Visibly active, dynamic vertical upward drift */
 .strip-1 .collage-strip-inner {
-  animation: collage-scroll 85s linear infinite;
+  animation: collage-scroll 24s linear infinite;
 }
 .strip-2 .collage-strip-inner {
-  animation: collage-scroll 110s linear infinite;
-  margin-top: -180px;
+  animation: collage-scroll 32s linear infinite;
+  margin-top: -140px;
 }
 .strip-3 .collage-strip-inner {
-  animation: collage-scroll 95s linear infinite;
-  margin-top: -90px;
+  animation: collage-scroll 28s linear infinite;
+  margin-top: -70px;
 }
 
 @keyframes collage-scroll {
@@ -822,10 +821,11 @@ html.reveal-ready [data-reveal]:not(.revealed) {
 .collage-cell {
   width: 100%;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  margin-bottom: 12px;
 }
 
 .collage-cell.aspect-wide {
@@ -852,20 +852,22 @@ html.reveal-ready [data-reveal]:not(.revealed) {
 
 @media (max-width: 767px) {
   .hero-collage-track {
-    gap: 6px;
-    padding: 0 6px;
+    gap: 8px;
+    padding: 0 8px;
   }
-  .collage-strip-inner {
-    gap: 6px;
+  .collage-cell {
+    border-radius: 8px;
+    margin-bottom: 8px;
   }
   .strip-3 {
     display: none;
   }
   .strip-1 .collage-strip-inner {
-    animation-duration: 75s;
+    animation-duration: 20s;
   }
   .strip-2 .collage-strip-inner {
-    animation-duration: 90s;
+    animation-duration: 26s;
+    margin-top: -80px;
   }
 }
 
