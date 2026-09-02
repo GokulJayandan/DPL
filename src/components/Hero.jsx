@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { homeIntroCards } from '../data/eventData'
 import { ArrowIcon, TrophyIcon, TargetIcon, TeamIcon } from './Icons'
+import HeroCollage from './HeroCollage'
 
 const introIcons = [TrophyIcon, TargetIcon, TeamIcon]
 
@@ -61,13 +62,8 @@ export default function Hero() {
 
   return (
     <section id="home" className="hero-section section-grid">
-      {/* 
-        Hero Ambient Background (Video removed for maximum mobile responsiveness & performance)
-      */}
-      <div className="hero-video-wrapper hero-ambient-backdrop" aria-hidden="true">
-        {/* Subtle contrast gradient behind typography for perfect legibility */}
-        <div className="hero-video-tint" />
-      </div>
+      {/* Scrolling image collage background */}
+      <HeroCollage />
 
       {/* 
         ========================================================================
