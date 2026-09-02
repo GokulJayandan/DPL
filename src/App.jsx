@@ -7,6 +7,7 @@ import Schedule from './components/Schedule'
 import FinalCta from './components/FinalCta'
 import CinematicLoader from './components/CinematicLoader'
 import CricketCursor from './components/CricketCursor'
+import InteractiveBackground from './components/InteractiveBackground'
 
 export default function App() {
   useScrollReveal()
@@ -19,6 +20,7 @@ export default function App() {
         landing page, then unmounts completely. NO global video background.
       */}
       <CinematicLoader />
+      <InteractiveBackground />
       <CricketCursor />
 
       {/* Layer 100: Navigation Bar */}

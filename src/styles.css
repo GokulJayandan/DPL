@@ -51,7 +51,7 @@
 }
 
 html {
-  background-color: #000000;
+  background-color: #030507;
   color: var(--text-body);
   font-family: var(--font-body);
   font-size: 16px;
@@ -62,7 +62,7 @@ html {
 }
 
 body {
-  background-color: #000000;
+  background-color: #030507;
   color: var(--text-body);
   overflow-x: hidden;
   min-height: 100vh;
@@ -89,9 +89,10 @@ button {
 /* Site Wrapper — Full viewport responsive container */
 .site-wrapper {
   opacity: 1;
-  background-color: #000000;
+  background-color: transparent;
   min-height: 100vh;
   position: relative;
+  isolation: isolate;
   overflow-x: hidden;
 }
 
@@ -1056,7 +1057,7 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   padding-bottom: clamp(80px, 12vw, 140px);
   border-top: 1px solid var(--line-subtle);
   position: relative;
-  background-color: var(--bg-surface);
+  background-color: rgba(3, 5, 7, 0.58);
   z-index: 10;
 }
 
@@ -1249,7 +1250,7 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   padding-bottom: clamp(80px, 12vw, 140px);
   border-top: 1px solid var(--line-subtle);
   position: relative;
-  background-color: var(--bg-section-alt);
+  background-color: rgba(5, 8, 13, 0.62);
   z-index: 10;
 }
 
@@ -1420,7 +1421,7 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   padding-bottom: clamp(80px, 12vw, 140px);
   border-top: 1px solid var(--line-subtle);
   position: relative;
-  background-color: rgba(4, 4, 6, 0.72);
+  background-color: rgba(3, 5, 8, 0.56);
   z-index: 10;
 }
 
@@ -1595,7 +1596,7 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   text-align: center;
   position: relative;
   overflow: hidden;
-  background-color: var(--bg-surface);
+  background-color: rgba(3, 5, 7, 0.6);
   z-index: 10;
 }
 
@@ -1736,7 +1737,109 @@ html.reveal-ready [data-reveal]:not(.revealed) {
 .footer-logo {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.footer-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: #020304 url('/assets/dpl-navbar-logo.png') center / cover no-repeat;
+  font-family: var(--font-body);
+  font-size: 0;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  color: transparent;
+}
+
+.footer-title {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--text-white);
+}
+
+.footer-tagline {
+  max-width: 360px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.6;
+  letter-spacing: 0;
+  color: var(--text-body);
+}
+
+.footer-edition-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.footer-nav-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
+}
+
+.footer-heading {
+  margin-bottom: 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-white);
+}
+
+.footer-nav-col a,
+.footer-nav-col button {
+  display: block;
+  max-width: 100%;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--text-muted);
+  text-align: left;
+  overflow-wrap: anywhere;
+  transition: color 0.2s ease;
+}
+
+.footer-nav-col a:hover,
+.footer-nav-col button:hover {
+  color: var(--accent-blue-light);
+}
+
+.footer-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line-subtle);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--text-muted);
 }
 
 .footer-desc {
@@ -1917,6 +2020,12 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   .footer-inner {
     grid-template-columns: 1fr;
     gap: 32px;
+  }
+
+  .footer-bottom-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }
 

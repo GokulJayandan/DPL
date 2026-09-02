@@ -1,0 +1,35 @@
+.interactive-ui-background {
+  --mouse-x: 50vw;
+  --mouse-y: 50vh;
+  --gradient-opacity: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 18% 22%, rgba(15, 92, 140, 0.22) 0%, transparent 46%),
+    radial-gradient(ellipse at 84% 70%, rgba(172, 108, 25, 0.12) 0%, transparent 42%),
+    linear-gradient(145deg, #020509 0%, #071321 48%, #03070d 100%);
+}
+
+.interactive-ui-background::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: min(920px, 95vw);
+  height: min(920px, 95vw);
+  pointer-events: none;
+  opacity: var(--gradient-opacity);
+  transform: translate3d(calc(var(--mouse-x) - 50%), calc(var(--mouse-y) - 50%), 0);
+  background:
+    radial-gradient(circle at center, rgba(50, 195, 255, 0.42) 0%, rgba(21, 106, 184, 0.28) 24%, rgba(204, 139, 46, 0.1) 46%, transparent 70%);
+  will-change: transform, opacity;
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .interactive-ui-background::after {
+    display: none;
+  }
+}
