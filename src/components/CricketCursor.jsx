@@ -63,11 +63,13 @@ export default function CricketCursor() {
       document.documentElement.classList.toggle('cricket-cursor-enabled', finePointerQuery.matches)
     }
 
+    let lastTouchTime = 0
+
     const spawnParticle = (x, y, movementX, movementY, now) => {
       if (reducedMotion) return
       const distance = Math.hypot(x - lastTrailX, y - lastTrailY)
-      const minimumDistance = cursor.touchMode ? 6 : 8
-      const minimumDelay = cursor.touchMode ? 20 : 30
+      const minimumDistance = cursor.touchMode ? 5 : 8
+      const minimumDelay = cursor.touchMode ? 16 : 30
       if (distance < minimumDistance && now - lastTrailTime < minimumDelay) return
 
       particles[particleIndex] = {
@@ -76,8 +78,8 @@ export default function CricketCursor() {
         vx: -movementX * 0.22 + (Math.random() - 0.5) * 0.5,
         vy: -movementY * 0.22 + (Math.random() - 0.5) * 0.5,
         born: now,
-        life: 400 + Math.random() * 180,
-        size: cursor.touchMode ? 7 + Math.random() * 3 : 7 + Math.random() * 5,
+        life: cursor.touchMode ? 320 + Math.random() * 140 : 400 + Math.random() * 180,
+        size: cursor.touchMode ? 6 + Math.random() * 3 : 7 + Math.random() * 5,
       }
       particleIndex = (particleIndex + 1) % TRAIL_PARTICLE_COUNT
       lastTrailX = x
@@ -122,12 +124,13 @@ export default function CricketCursor() {
     }
 
     const handlePointerMove = (event) => {
-      if (event.pointerType === 'touch') return
+      // Ignore touch-based or simulated mouse events fired after mobile touches
+      if (event.pointerType === 'touch' || performance.now() - lastTouchTime < 1000) return
       updateCursorPosition(event.clientX, event.clientY, event.target, false)
     }
 
     const handlePointerDown = (event) => {
-      if (!enabled || event.pointerType === 'touch') return
+      if (!enabled || event.pointerType === 'touch' || performance.now() - lastTouchTime < 1000) return
       cursor.pressed = true
       spawnRipple()
     }
@@ -139,6 +142,7 @@ export default function CricketCursor() {
 
     const handleTouchStart = (event) => {
       if (!event.touches.length) return
+      lastTouchTime = performance.now()
       const touch = event.touches[0]
       cursor.pressed = true
       cursor.touchMode = true
@@ -158,6 +162,7 @@ export default function CricketCursor() {
 
     const handleTouchMove = (event) => {
       if (!event.touches.length) return
+      lastTouchTime = performance.now()
       const touch = event.touches[0]
       cursor.pressed = true
       cursor.touchMode = true
@@ -167,18 +172,19 @@ export default function CricketCursor() {
     }
 
     const handleTouchEnd = (event) => {
+      lastTouchTime = performance.now()
       if (event.touches.length) {
         const touch = event.touches[0]
         updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
         return
       }
       cursor.pressed = false
-      cursor.hideAt = performance.now() + 500
+      cursor.hideAt = performance.now() + 260
     }
 
     const handleTouchCancel = () => {
       cursor.pressed = false
-      cursor.hideAt = performance.now() + 350
+      cursor.hideAt = performance.now() + 260
     }
 
     const handleWindowExit = (event) => {
@@ -186,18 +192,30 @@ export default function CricketCursor() {
     }
 
     const renderFrame = (now) => {
-      if (cursor.hideAt && now >= cursor.hideAt) {
-        cursor.hideAt = 0
-        hideCursor()
+      if (cursor.hideAt) {
+        const remaining = cursor.hideAt - now
+        if (remaining <= 0) {
+          cursor.hideAt = 0
+          hideCursor()
+        } else if (ballRef.current && cursor.touchMode) {
+          ballRef.current.style.opacity = `${Math.max(0, remaining / 260)}`
+        }
       }
 
       const prevX = cursor.x
       const prevY = cursor.y
 
-      // Perfectly balanced fluid flow on both mobile and desktop
-      const easing = reducedMotion ? 1 : cursor.touchMode ? 0.36 : 0.34
-      cursor.x += (cursor.targetX - cursor.x) * easing
-      cursor.y += (cursor.targetY - cursor.y) * easing
+      if (cursor.touchMode) {
+        // Mobile: High-precision hand tracking so curves are preserved 1:1 without straight-line corner cutting
+        const easing = reducedMotion ? 1 : 0.86
+        cursor.x += (cursor.targetX - cursor.x) * easing
+        cursor.y += (cursor.targetY - cursor.y) * easing
+      } else {
+        // Desktop: Luxurious floating cursor lag
+        const easing = reducedMotion ? 1 : 0.34
+        cursor.x += (cursor.targetX - cursor.x) * easing
+        cursor.y += (cursor.targetY - cursor.y) * easing
+      }
 
       const ballMovementX = cursor.x - prevX
       const ballMovementY = cursor.y - prevY
