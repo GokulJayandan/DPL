@@ -97,20 +97,20 @@ export default function CricketCursor() {
       rippleIndex = (rippleIndex + 1) % RIPPLE_COUNT
     }
 
-    const handlePointerMove = (event) => {
-      if (!enabled || (event.pointerType === 'touch' && !cursor.pressed)) return
+    const updateCursorPosition = (clientX, clientY, target, touchMode) => {
+      if (!enabled) return
 
-      const movementX = event.clientX - cursor.targetX
-      const movementY = event.clientY - cursor.targetY
-      cursor.targetX = event.clientX
-      cursor.targetY = event.clientY
+      const movementX = clientX - cursor.targetX
+      const movementY = clientY - cursor.targetY
+      cursor.targetX = clientX
+      cursor.targetY = clientY
       cursor.visible = true
-      cursor.touchMode = event.pointerType === 'touch'
+      cursor.touchMode = touchMode
       cursor.hideAt = 0
 
       if (!cursor.initialized) {
-        cursor.x = event.clientX
-        cursor.y = event.clientY
+        cursor.x = clientX
+        cursor.y = clientY
         cursor.initialized = true
       }
 
@@ -118,31 +118,50 @@ export default function CricketCursor() {
         cursor.targetRotation += clamp(movementX * 0.8 + movementY * 0.25, -22, 22)
       }
 
-      const target = event.target
       cursor.hovered = target instanceof Element && Boolean(target.closest(INTERACTIVE_SELECTOR))
-      spawnParticle(event.clientX, event.clientY, movementX, movementY, performance.now())
+      spawnParticle(clientX, clientY, movementX, movementY, performance.now())
       if (ballRef.current) ballRef.current.style.opacity = '1'
     }
 
+    const handlePointerMove = (event) => {
+      if (event.pointerType === 'touch') return
+      updateCursorPosition(event.clientX, event.clientY, event.target, false)
+    }
+
     const handlePointerDown = (event) => {
-      if (!enabled) return
+      if (!enabled || event.pointerType === 'touch') return
       cursor.pressed = true
-      cursor.touchMode = event.pointerType === 'touch'
-      if (cursor.touchMode) {
-        cursor.x = event.clientX
-        cursor.y = event.clientY
-        cursor.targetX = event.clientX
-        cursor.targetY = event.clientY
-        cursor.initialized = true
-        cursor.visible = true
-        if (ballRef.current) ballRef.current.style.opacity = '1'
-      }
       spawnRipple()
     }
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (event) => {
+      if (event.pointerType === 'touch') return
       cursor.pressed = false
-      if (cursor.touchMode) cursor.hideAt = performance.now() + 500
+    }
+
+    const handleTouchStart = (event) => {
+      if (!enabled || !event.touches.length) return
+      const touch = event.touches[0]
+      cursor.pressed = true
+      updateCursorPosition(touch.clientX, touch.clientY, document.elementFromPoint(touch.clientX, touch.clientY), true)
+      spawnRipple()
+    }
+
+    const handleTouchMove = (event) => {
+      if (!enabled || !event.touches.length) return
+      const touch = event.touches[0]
+      cursor.pressed = true
+      updateCursorPosition(touch.clientX, touch.clientY, document.elementFromPoint(touch.clientX, touch.clientY), true)
+    }
+
+    const handleTouchEnd = (event) => {
+      if (event.touches.length) {
+        const touch = event.touches[0]
+        updateCursorPosition(touch.clientX, touch.clientY, document.elementFromPoint(touch.clientX, touch.clientY), true)
+        return
+      }
+      cursor.pressed = false
+      cursor.hideAt = performance.now() + 500
     }
 
     const handleWindowExit = (event) => {
@@ -216,6 +235,10 @@ export default function CricketCursor() {
     document.addEventListener('pointerdown', handlePointerDown, { passive: true })
     document.addEventListener('pointerup', handlePointerUp, { passive: true })
     document.addEventListener('pointercancel', handlePointerUp, { passive: true })
+    document.addEventListener('touchstart', handleTouchStart, { passive: true })
+    document.addEventListener('touchmove', handleTouchMove, { passive: true })
+    document.addEventListener('touchend', handleTouchEnd, { passive: true })
+    document.addEventListener('touchcancel', handleTouchEnd, { passive: true })
     document.addEventListener('mouseout', handleWindowExit, { passive: true })
     window.addEventListener('blur', hideCursor)
     finePointerQuery.addEventListener('change', updateEligibility)
@@ -229,6 +252,10 @@ export default function CricketCursor() {
       document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('pointerup', handlePointerUp)
       document.removeEventListener('pointercancel', handlePointerUp)
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+      document.removeEventListener('touchcancel', handleTouchEnd)
       document.removeEventListener('mouseout', handleWindowExit)
       window.removeEventListener('blur', hideCursor)
       finePointerQuery.removeEventListener('change', updateEligibility)
