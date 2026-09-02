@@ -242,6 +242,8 @@ export default function CricketCursor() {
 
         if (ballRef.current && cursor.initialized) {
           ballRef.current.style.transform = `translate3d(${cursor.x}px, ${cursor.y}px, 0) translate3d(-50%, -50%, 0) rotate(${cursor.rotation}deg) scale(${cursor.scale})`
+          // Explicitly keep ball visible during active touch (hideAt block may have set opacity)
+          if (!cursor.hideAt) ballRef.current.style.opacity = '1'
         }
       } else {
         // DESKTOP: luxurious floating physics with 0.34 easing
