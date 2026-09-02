@@ -143,6 +143,8 @@ export default function CricketCursor() {
       if (!enabled || !event.touches.length) return
       const touch = event.touches[0]
       cursor.pressed = true
+      cursor.x = touch.clientX
+      cursor.y = touch.clientY
       updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
       spawnRipple()
     }
@@ -173,7 +175,7 @@ export default function CricketCursor() {
         cursor.hideAt = 0
         hideCursor()
       }
-      const easing = reducedMotion ? 1 : 0.34
+      const easing = reducedMotion ? 1 : cursor.touchMode ? 0.2 : 0.34
       cursor.x += (cursor.targetX - cursor.x) * easing
       cursor.y += (cursor.targetY - cursor.y) * easing
       cursor.rotation += ((reducedMotion ? 0 : cursor.targetRotation) - cursor.rotation) * 0.2
