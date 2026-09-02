@@ -51,8 +51,13 @@ export default function Navbar() {
   const scrollTo = (id) => {
     setActive(id)
     setOpen(false)
-    const el = document.getElementById(id)
+    const targetId = id === 'register' ? 'registration-action' : id
+    const el = document.getElementById(targetId)
     if (el) {
+      if (id === 'register') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        return
+      }
       const yOffset = -80
       const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset
       window.scrollTo({ top: y, behavior: 'smooth' })

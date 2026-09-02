@@ -44,7 +44,7 @@ export default function FinalCta() {
           </p>
 
           <div className="cta-btn-wrap">
-            <a
+            <a id='registration-action'
               href={event.registrationUrl}
               className="btn-primary btn-large"
               onClick={handleRegister}

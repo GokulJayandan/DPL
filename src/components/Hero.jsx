@@ -51,7 +51,10 @@ export default function Hero() {
   }
 
   const scrollToRegister = () => {
-    document.getElementById('register')?.scrollIntoView({ behavior: 'smooth' })
+    document.getElementById('registration-action')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    })
   }
 
   const isIntroActive = stage !== 'settled'
