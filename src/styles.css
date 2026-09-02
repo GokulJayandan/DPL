@@ -10,7 +10,7 @@
 
 :root {
   /* Core Premium Black Sports Arena Palette */
-  --bg-deep: #030507;
+  --bg-deep: #000000;
   --bg-surface: #070709;
   --bg-section-alt: #0a0a0d;
   --bg-card: #0e0e12;
@@ -51,7 +51,7 @@
 }
 
 html {
-  background-color: #030507;
+  background-color: #000000;
   color: var(--text-body);
   font-family: var(--font-body);
   font-size: 16px;
@@ -62,7 +62,7 @@ html {
 }
 
 body {
-  background-color: #030507;
+  background-color: #000000;
   color: var(--text-body);
   overflow-x: hidden;
   min-height: 100vh;
@@ -89,11 +89,10 @@ button {
 /* Site Wrapper — Full viewport responsive container */
 .site-wrapper {
   opacity: 1;
-  background-color: transparent;
+  background-color: #000000;
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  isolation: isolate;
 }
 
 .main-content-stream {
@@ -758,7 +757,6 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(180deg, transparent 68%, rgba(3, 5, 7, 0.38) 86%, #030507 100%);
 }
 
 /* ==========================================================================
@@ -1058,7 +1056,7 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   padding-bottom: clamp(80px, 12vw, 140px);
   border-top: 1px solid var(--line-subtle);
   position: relative;
-  background-color: rgba(3, 5, 7, 0.82);
+  background-color: var(--bg-surface);
   z-index: 10;
 }
 
@@ -1251,7 +1249,7 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   padding-bottom: clamp(80px, 12vw, 140px);
   border-top: 1px solid var(--line-subtle);
   position: relative;
-  background-color: rgba(6, 9, 14, 0.84);
+  background-color: var(--bg-section-alt);
   z-index: 10;
 }
 
@@ -1422,7 +1420,7 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   padding-bottom: clamp(80px, 12vw, 140px);
   border-top: 1px solid var(--line-subtle);
   position: relative;
-  background-color: rgba(3, 5, 8, 0.78);
+  background-color: rgba(4, 4, 6, 0.72);
   z-index: 10;
 }
 
@@ -1597,7 +1595,7 @@ html.reveal-ready [data-reveal]:not(.revealed) {
   text-align: center;
   position: relative;
   overflow: hidden;
-  background-color: rgba(3, 5, 7, 0.84);
+  background-color: var(--bg-surface);
   z-index: 10;
 }
 
