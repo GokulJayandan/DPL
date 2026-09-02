@@ -1,0 +1,184 @@
+.cricket-arena-background {
+  --mouse-x: 50vw;
+  --mouse-y: 50vh;
+  --spotlight-opacity: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(10, 30, 58, 0.34) 0%, rgba(3, 9, 16, 0.18) 36%, transparent 68%),
+    #030507;
+}
+
+.cricket-arena-background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--spotlight-opacity);
+  background: radial-gradient(
+    circle 620px at var(--mouse-x) var(--mouse-y),
+    rgba(37, 99, 235, 0.11) 0%,
+    rgba(56, 189, 248, 0.055) 34%,
+    rgba(12, 32, 54, 0.02) 56%,
+    transparent 74%
+  );
+}
+
+.arena-technical-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.58;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 39px, rgba(56, 189, 248, 0.045) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, rgba(37, 99, 235, 0.04) 39px 40px);
+  -webkit-mask-image: radial-gradient(circle 440px at var(--mouse-x) var(--mouse-y), #000 0%, rgba(0, 0, 0, 0.52) 54%, transparent 100%);
+  mask-image: radial-gradient(circle 440px at var(--mouse-x) var(--mouse-y), #000 0%, rgba(0, 0, 0, 0.52) 54%, transparent 100%);
+}
+
+.arena-field-markings {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  width: min(82vw, 1100px);
+  aspect-ratio: 1.65;
+  border: 1px solid rgba(56, 189, 248, 0.05);
+  border-radius: 50%;
+  transform: translate3d(-50%, -50%, 0);
+  opacity: 0.8;
+}
+
+.arena-field-markings::before {
+  content: '';
+  position: absolute;
+  top: 22%;
+  bottom: 22%;
+  left: 44%;
+  right: 44%;
+  border: 1px solid rgba(56, 189, 248, 0.055);
+  background:
+    linear-gradient(to bottom, transparent 8%, rgba(56, 189, 248, 0.05) 8% 8.4%, transparent 8.4% 91.6%, rgba(56, 189, 248, 0.05) 91.6% 92%, transparent 92%),
+    linear-gradient(to right, transparent 48%, rgba(37, 99, 235, 0.04) 48% 52%, transparent 52%);
+}
+
+.arena-field-markings::after {
+  content: '';
+  position: absolute;
+  inset: 7%;
+  border: 1px solid rgba(37, 99, 235, 0.035);
+  border-radius: 50%;
+}
+
+.cricket-cursor-layer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cricket-cursor-ball,
+.cricket-cursor-particle,
+.cricket-cursor-ripple {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.cricket-cursor-ball {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  opacity: 0;
+  user-select: none;
+  filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.5));
+  transition: filter 150ms ease;
+}
+
+.cricket-cursor-ball.is-hovering {
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.75));
+}
+
+.cricket-cursor-particle {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.cricket-cursor-particle.particle-blue {
+  background: #3b82f6;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.65);
+}
+
+.cricket-cursor-particle.particle-cyan {
+  background: #67d2f7;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.68);
+}
+
+.cricket-cursor-particle.particle-spark {
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.72);
+}
+
+.cricket-cursor-ripple {
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(56, 189, 248, 0.72);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.cursor-reactive-card.cursor-reactive-card.cursor-reactive-card {
+  background-image: radial-gradient(circle 210px at var(--card-x, 50%) var(--card-y, 50%), rgba(56, 189, 248, 0.075), transparent 72%);
+  border-color: rgba(56, 189, 248, 0.25);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cricket-cursor-layer {
+    display: block;
+  }
+
+  html.cricket-cursor-enabled,
+  html.cricket-cursor-enabled * {
+    cursor: none !important;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .cricket-arena-background::after {
+    display: none;
+  }
+
+  .arena-technical-grid {
+    opacity: 0.24;
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 0%, transparent 76%);
+    mask-image: radial-gradient(ellipse at center, #000 0%, transparent 76%);
+  }
+
+  .arena-field-markings {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cricket-arena-background::after,
+  .cricket-cursor-particle,
+  .cricket-cursor-ripple {
+    display: none;
+  }
+
+  .arena-technical-grid {
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 0%, transparent 74%);
+    mask-image: radial-gradient(ellipse at center, #000 0%, transparent 74%);
+  }
+
+  .cricket-cursor-ball {
+    transition: none;
+  }
+}

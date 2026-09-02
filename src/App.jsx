@@ -6,7 +6,7 @@ import Why from './components/Why'
 import Schedule from './components/Schedule'
 import FinalCta from './components/FinalCta'
 import CinematicLoader from './components/CinematicLoader'
-import CricketCursor from './components/CricketCursor'
+import CricketCursorBackground from './components/CricketCursorBackground'
 
 export default function App() {
   useScrollReveal()
@@ -19,7 +19,7 @@ export default function App() {
         landing page, then unmounts completely. NO global video background.
       */}
       <CinematicLoader />
-      <CricketCursor />
+      <CricketCursorBackground />
 
       {/* Layer 100: Navigation Bar */}
       <Navbar />
