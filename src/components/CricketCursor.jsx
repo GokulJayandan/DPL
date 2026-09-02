@@ -143,7 +143,7 @@ export default function CricketCursor() {
       if (!enabled || !event.touches.length) return
       const touch = event.touches[0]
       cursor.pressed = true
-      updateCursorPosition(touch.clientX, touch.clientY, document.elementFromPoint(touch.clientX, touch.clientY), true)
+      updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
       spawnRipple()
     }
 
@@ -151,13 +151,13 @@ export default function CricketCursor() {
       if (!enabled || !event.touches.length) return
       const touch = event.touches[0]
       cursor.pressed = true
-      updateCursorPosition(touch.clientX, touch.clientY, document.elementFromPoint(touch.clientX, touch.clientY), true)
+      updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
     }
 
     const handleTouchEnd = (event) => {
       if (event.touches.length) {
         const touch = event.touches[0]
-        updateCursorPosition(touch.clientX, touch.clientY, document.elementFromPoint(touch.clientX, touch.clientY), true)
+        updateCursorPosition(touch.clientX, touch.clientY, event.target, true)
         return
       }
       cursor.pressed = false
